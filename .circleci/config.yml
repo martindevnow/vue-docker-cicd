@@ -4,6 +4,11 @@ jobs:
     machine: true
     steps:
       - checkout
+      - run:
+          name: Setup Virtual Env
+          command: |
+            echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
+            echo 'export IMAGE_NAME=vue-docker-cicd' >> $BASH_ENV 
       - run: 
           name: Building Prod Docker Image
           command: |
@@ -13,6 +18,8 @@ jobs:
           command: |
             docker build -t martindevnow/vue-docker-cicd-test -f Dockerfile.test .
             docker run --rm --name vue-docker-cicd-test-1 martindevnow/vue-docker-cicd-test
-    #  - run: 
-    #      name: Build and Push Docker Image
-    #      command: |
+      - run: 
+          name: Build and Push Docker Image
+          command: |
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push martindevnow/vue-docker-cicd:$TAG
