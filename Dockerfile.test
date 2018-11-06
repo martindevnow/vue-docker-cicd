@@ -1,0 +1,3 @@
+FROM martindevnow/vue-docker-cicd
+
+CMD [ "npm", "run", "test:unit" ]
