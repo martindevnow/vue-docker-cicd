@@ -13,14 +13,14 @@ jobs:
       - run: 
           name: Building Prod Docker Image
           command: |
-            docker build -t martindevnow/vue-docker-cicd -f Dockerfile.production  .
+            docker build -t martindevnow/$IMAGE_NAME:$TAG -f Dockerfile.production  .
       - run:
           name: Testing Application
           command: |
-            docker build -t martindevnow/vue-docker-cicd-test -f Dockerfile.test .
-            docker run --rm --name vue-docker-cicd-test-1 martindevnow/vue-docker-cicd-test
+            docker build -t martindevnow/$IMAGE_NAME-test -f Dockerfile.test .
+            docker run --rm --name vue-docker-cicd-test-1 martindevnow/$IMAGE_NAME-test
       - run: 
           name: Build and Push Docker Image
           command: |
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
-            docker push martindevnow/vue-docker-cicd:$TAG
+            docker push martindevnow/$IMAGE_NAME:$TAG
