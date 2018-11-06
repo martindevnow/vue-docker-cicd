@@ -1,6 +1,40 @@
 version: 2
 jobs:
   build:
+    branches:
+      ignore:
+        - master
+    machine: 
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - run:
+          name: Setup Virtual Env
+          command: |
+            echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
+            echo 'export IMAGE_NAME=vue-docker-cicd' >> $BASH_ENV 
+      - run: 
+          name: Building Docker Image
+          command: |
+            docker build -t martindevnow/$IMAGE_NAME:$TAG -f Dockerfile.production  .
+      - run:
+          name: Testing Application
+          command: |
+            docker build -t martindevnow/$IMAGE_NAME-test -f Dockerfile.test .
+            docker run --rm --name vue-docker-cicd-test-1 martindevnow/$IMAGE_NAME-test
+      #- run: 
+      #    name: Build and Push Docker Image
+      #    command: |
+      #      echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+      #      docker push martindevnow/$IMAGE_NAME:$TAG
+      #- run:
+      #    name: Deploy to Digital Ocean
+      #    command: |
+      #      ssh -o StrictHostKeyChecking=no root@yamenai.com "/bin/bash /home/yamenai/deploy_vue_docker_cicd_app.sh martindevnow/$IMAGE_NAME:$TAG"
+  deploy_prod:
+    branches:
+      only:
+        - master
     machine: 
       docker_layer_caching: true
     steps:
