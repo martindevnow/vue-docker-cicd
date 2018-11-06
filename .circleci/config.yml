@@ -24,3 +24,7 @@ jobs:
           command: |
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push martindevnow/$IMAGE_NAME:$TAG
+      - run:
+          name: Deploy to Digital Ocean
+          command: |
+            ssh -o StrictHostKeyChecking=no root@yamenai.com "/bin/bash /home/yamenai/deploy_vue_docker_cicd_app.sh martindevnow/$IMAGE_NAME:$TAG"
