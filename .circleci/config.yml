@@ -5,6 +5,6 @@ jobs:
     steps:
       - checkout
       - run: |
-          docker build -t martindevnow/vue-docker-cicd .
+          docker build -t martindevnow/vue-docker-cicd -f Dockerfile.production  .
           docker build -t martindevnow/vue-docker-cicd-test -f Dockerfile.test .
           docker run --rm --name vue-docker-cicd-test-1 martindevnow/vue-docker-cicd-test
