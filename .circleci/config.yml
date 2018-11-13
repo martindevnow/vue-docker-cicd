@@ -33,4 +33,4 @@ jobs:
       - run:  
           name: Deploy to Digital Ocean
           command: |
-            ssh -o StrictHostKeyChecking=no ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "/bin/bash /root/deploy.sh martindevnow/$IMAGE_NAME:$TAG ${SUBDOMAIN}"
+            ssh -o StrictHostKeyChecking=no ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "/bin/bash /root/deploy.sh $IMAGE_NAME:$TAG ${SUBDOMAIN}"

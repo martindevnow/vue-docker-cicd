@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # TODO: Confirm script, upload to prod server to test
+# TODO: Setup webhook on PR merge (or try to see if CircleCI will run against merge.. and retain the old branch name.)
+#       Ideally, use CCI to kill the container after successful merge.
 
 set -e
 
-DOCKER_IMAGE=$1
+DOCKER_IMAGE="martindevnow/${1}"
 URL_SUBDOMAIN=$2
 CONAINER_NAME="vue-docker-cicd-${URL_SUBDOMAIN}"
 
