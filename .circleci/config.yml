@@ -1,0 +1,38 @@
+version: 2
+jobs:
+  build:
+    machine: 
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - run:
+          name: Setup Virtual Env
+          command: |
+            echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
+            echo 'export IMAGE_NAME=vue-docker-cicd' >> $BASH_ENV
+            echo 'export LOG_SERVER_HOST=yamenai.com' >> $BASH_ENV
+            echo 'export LOG_SERVER_USER=root' >> $BASH_ENV
+            echo 'export PROD_SERVER_HOST=142.93.156.40' >> $BASH_ENV
+            echo 'export PROD_SERVER_USER=root' >> $BASH_ENV
+      - run: 
+          name: Building Docker Image
+          command: |
+            docker build -t martindevnow/$IMAGE_NAME:$TAG -f Dockerfile.production  .
+      - run:
+          name: Log CI Environment Variables
+          command: |
+            ssh -o StrictHostKeyChecking=no ${LOG_SERVER_USER}@${LOG_SERVER_HOST} "printf 'Preparing a build...\nCIRCLE_BRANCH == ${CIRCLE_BRANCH}\nCIRCLE_BUILD_NUM == ${CIRCLE_BUILD_NUM}\nCIRCLE_BUILD_URL == ${CIRCLE_BUILD_URL}\nCIRCLE_COMPARE_URL == ${CIRCLE_COMPARE_URL}\nCIRCLE_INTERNAL_TASK_DATA == ${CIRCLE_INTERNAL_TASK_DATA}\nCIRCLE_JOB == ${CIRCLE_JOB}\nCIRCLE_NODE_INDEX == ${CIRCLE_NODE_INDEX}\nCIRCLE_PR_NUMBER == ${CIRCLE_PR_NUMBER}\nCIRCLE_PR_REPONAME == ${CIRCLE_PR_REPONAME}\nCIRCLE_PR_USERNAME == ${CIRCLE_PR_USERNAME}\nCIRCLE_PREVIOUS_BUILD_NUM == ${CIRCLE_PREVIOUS_BUILD_NUM}\nCIRCLE_PROJECT_REPONAME == ${CIRCLE_PROJECT_REPONAME}\nCIRCLE_PROJECT_USERNAME == ${CIRCLE_PROJECT_USERNAME}\nCIRCLE_PULL_REQUEST == ${CIRCLE_PULL_REQUEST}\nCIRCLE_PULL_REQUESTS == ${CIRCLE_PULL_REQUESTS}\nCIRCLE_REPOSITORY_URL == ${CIRCLE_REPOSITORY_URL}\nCIRCLE_SHA1 == ${CIRCLE_SHA1}\nCIRCLE_TAG == ${CIRCLE_TAG}\nCIRCLE_USERNAME == ${CIRCLE_USERNAME}\nCIRCLE_WORKFLOW_ID == ${CIRCLE_WORKFLOW_ID}\nCIRCLE_WORKING_DIRECTORY == ${CIRCLE_WORKING_DIRECTORY}\nCIRCLECI == ${CIRCLECI}\nHOME == ${HOME}\n\n' >> vue_docker_cicd_$TAG.log"
+      - run:
+          name: Testing Application
+          command: |
+            docker build -t martindevnow/$IMAGE_NAME-test -f Dockerfile.test .
+            docker run --rm --name vue-docker-cicd-test-1 martindevnow/$IMAGE_NAME-test
+      - run: 
+          name: Build and Push Docker Image
+          command: |
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push martindevnow/$IMAGE_NAME:$TAG
+      - run:  
+          name: Deploy to Digital Ocean
+          command: |
+            ssh -o StrictHostKeyChecking=no ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "/bin/bash /root/deploy_${CIRCLE_BRANCH}.sh martindevnow/$IMAGE_NAME:$TAG"

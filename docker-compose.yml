@@ -1,0 +1,16 @@
+version: '3.4'
+services:
+  web:
+    build: 
+      context: .
+      target: devBuild
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    volumes:
+      - .:/usr/src/app/:rw
+    tty: true
+    environment:
+      - NODE_ENV=development
+    command: >
+      npm run serve
