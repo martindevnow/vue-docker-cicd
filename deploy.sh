@@ -16,11 +16,11 @@ if [[ $# -lt 2 ]] ; then
     exit 1
 fi
 
-if [[ $URL_SUBDOMAIN -eq "master" ]] ; then
+if [[ $URL_SUBDOMAIN == "master" ]] ; then
     URL_SUBDOMAIN="qa"
 fi
 
-if [[ $URL_SUBDOMAIN -eq "develop" ]] ; then
+if [[ $URL_SUBDOMAIN == "develop" ]] ; then
     URL_SUBDOMAIN="dev"
 fi
 
