@@ -51,4 +51,4 @@ As stated above, updating the `.circleci/config.yml` will allow you to change se
 - Consider other ways to run the tests within the container without requiring a separate staged build for this purpose.
   - Running `docker exec -it 80aeeeaa12d3 npm run test:unit` works, but need to either have a static container name (assuming the `CONTAINER_ID` can be substituted for the `CONTAINER_NAME`)
   - If not, need a way to get the container ID on the fly and run the command.
-
+- Deploy Docker Container for Feature Branch without requiring pushing to Docker Hub (if possible?)
