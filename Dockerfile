@@ -1,7 +1,7 @@
 FROM node:9.11.1 as devBuild
 WORKDIR /tmp
 COPY package*.json /tmp/
-RUN npm install
+RUN CI=true npm install
 WORKDIR /usr/src/app
 COPY . /usr/src/app/
 RUN cp -a /tmp/node_modules /usr/src/app/
