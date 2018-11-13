@@ -9,7 +9,10 @@
     "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit",
     "docker:dev": "docker-compose up",
-    "docker:test": "docker build --target testBuild -t martindevnow/vue-docker-cicd:latest -f Dockerfile  . && docker run --rm=true martindevnow/vue-docker-cicd:latest"
+    "docker:unit": "docker build --target devBuild -t martindevnow/vue-docker-cicd-dev:latest . && docker run --rm=true martindevnow/vue-docker-cicd-dev:latest npm run test:unit",
+    "docker:test": "docker build --target testBuild -t martindevnow/vue-docker-cicd-test:latest . && docker run --rm=true martindevnow/vue-docker-cicd-test:latest",
+    "docker:prod": "docker build --target prodBuild -t martindevnow/vue-docker-cicd-prod:latest .",
+    "prod": "docker run --rm=true -p 80:80 martindevnow/vue-docker-cicd-prod:latest"
   },
   "dependencies": {
     "vue": "^2.5.17",

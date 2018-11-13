@@ -14,10 +14,7 @@ jobs:
             echo 'export LOG_SERVER_USER=root' >> $BASH_ENV
             echo 'export PROD_SERVER_HOST=142.93.156.40' >> $BASH_ENV
             echo 'export PROD_SERVER_USER=root' >> $BASH_ENV
-      - run: 
-          name: Building Docker Image
-          command: |
-            docker build -t martindevnow/$IMAGE_NAME:$TAG -f Dockerfile.production  .
+            echo 'export SUBDOMAIN=${CIRCLE_BRANCH//[\/.]/_}' >> $BASH_ENV 
       - run:
           name: Log CI Environment Variables
           command: |
@@ -25,14 +22,15 @@ jobs:
       - run:
           name: Testing Application
           command: |
-            docker build -t martindevnow/$IMAGE_NAME-test -f Dockerfile.test .
-            docker run --rm --name vue-docker-cicd-test-1 martindevnow/$IMAGE_NAME-test
+            docker build --target testBuild -t martindevnow/$IMAGE_NAME-test .
+            docker run --rm --name vue-docker-cicd-test-${CIRCLE_BUILD_NUM} martindevnow/$IMAGE_NAME-test
       - run: 
           name: Build and Push Docker Image
           command: |
+            docker build --target prodBuild -t martindevnow/$IMAGE_NAME:$TAG .
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push martindevnow/$IMAGE_NAME:$TAG
       - run:  
           name: Deploy to Digital Ocean
           command: |
-            ssh -o StrictHostKeyChecking=no ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "/bin/bash /root/deploy_${CIRCLE_BRANCH}.sh martindevnow/$IMAGE_NAME:$TAG"
+            ssh -o StrictHostKeyChecking=no ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "/bin/bash /root/deploy.sh $IMAGE_NAME:$TAG ${SUBDOMAIN}"
