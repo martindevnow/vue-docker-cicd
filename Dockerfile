@@ -19,12 +19,7 @@ CMD [ "npm", "run", "test:unit" ]
 # Builder
 FROM node:9.11.1 as builder
 WORKDIR /usr/src/app
-WORKDIR /tmp
-COPY package*.json /tmp/
-RUN npm install --only=prod
-WORKDIR /usr/src/app
-COPY . /usr/src/app/
-RUN cp -a /tmp/node_modules /usr/src/app/
+COPY --from=devBuild /usr/src/app .
 RUN npm run build
 
 # Make production build
@@ -34,6 +29,3 @@ WORKDIR /app
 COPY --from=builder /usr/src/app/dist .
 EXPOSE 80
 CMD [ "http-server", "-p", "80", "/app" ]
-
-
-
