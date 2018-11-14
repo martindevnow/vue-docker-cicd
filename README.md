@@ -3,7 +3,10 @@
 This project was done as a Proof of Concept to build a Continuous Integration and Continuous Deployment pipeline using a simple VueSPA developed and deployed within a Docker container and hooked up to CircleCI through GitHub.
 
 ## Project Requirements
-This project requires Docker to run.
+This project requires Docker to run
+
+### Local Development
+For local development, `docker-compose` is used. The docker-compose yml verison used is `3.4` and so docker v17.09.0+ is required. [See here for more details](https://docs.docker.com/compose/compose-file/compose-versioning/).
 
 ## Compiles and hot-reloads for development
 Once you have Docker installed, you can run the following command to build and run the project for local development.
