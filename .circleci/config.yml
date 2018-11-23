@@ -22,7 +22,7 @@ jobs:
       - run:
           name: Testing Application
           command: |
-            npm run build:dev && npm run start:dev && npm run start:test
+            npm run ci:test
       - run: 
           name: Build and Push Docker Image
           command: |
