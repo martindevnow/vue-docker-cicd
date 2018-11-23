@@ -2,6 +2,7 @@ FROM node:9.11.1 as devBuild
 WORKDIR /tmp
 COPY package*.json /tmp/
 RUN CI=true npm install
+RUN echo CIRCLE_BRANCH
 WORKDIR /usr/src/app
 # COPY . /usr/src/app/
 RUN cp -a /tmp/node_modules /usr/src/app/
