@@ -22,12 +22,11 @@ jobs:
       - run:
           name: Testing Application
           command: |
-            docker build --target testBuild -t martindevnow/$IMAGE_NAME-test .
-            docker run --rm --name vue-docker-cicd-test-${CIRCLE_BUILD_NUM} martindevnow/$IMAGE_NAME-test
+            npm run build:dev && npm run start:dev && npm run start:test
       - run: 
           name: Build and Push Docker Image
           command: |
-            docker build --target prodBuild -t martindevnow/$IMAGE_NAME:$TAG .
+            docker build -f Dockerfile -t martindevnow/$IMAGE_NAME:$TAG .
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push martindevnow/$IMAGE_NAME:$TAG
       - run:  
