@@ -1,11 +1,10 @@
 version: '3.4'
 services:
   web:
-    container_name: dev
-    build:
+    build: 
       context: .
       target: devBuild
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     ports:
       - "8085:8085"
     volumes:
@@ -13,16 +12,5 @@ services:
     tty: true
     environment:
       - NODE_ENV=development
-    command: npm run serve
-
-  cypress: 
-    container_name: e2e
-    build:
-      context: .
-      target: e2eBuild
-      dockerfile: Dockerfile.cypress
-    volumes:
-      - .:/usr/src/tests/:rw
-    environment:
-      - NODE_ENV=docker
-    command: ./node_modules/cypress/bin/cypress run
+    command: >
+      npm run serve
