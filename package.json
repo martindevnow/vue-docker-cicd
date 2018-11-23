@@ -6,13 +6,13 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit",
-    "docker:dev": "docker-compose up",
-    "docker:unit": "docker build --target devBuild -t martindevnow/vue-docker-cicd-dev:latest . && docker run --rm=true martindevnow/vue-docker-cicd-dev:latest npm run test:unit",
-    "docker:test": "docker build --target testBuild -t martindevnow/vue-docker-cicd-test:latest . && docker run --rm=true martindevnow/vue-docker-cicd-test:latest",
-    "docker:prod": "docker build --target prodBuild -t martindevnow/vue-docker-cicd-prod:latest .",
-    "prod": "docker run --rm=true -p 80:80 martindevnow/vue-docker-cicd-prod:latest"
+    "build:dev": "docker build -t martindevnow/${npm_package_name}_dev:latest -f Dockerfile.dev .",
+    "start:dev": "docker rm mdn_${npm_package_name}_dev_container || true && docker run --rm -it -p 8085:8085 --mount type=bind,src=`pwd`,dst=/usr/src/app --name mdn_${npm_package_name}_dev_container martindevnow/${npm_package_name}_dev:latest npm run serve",
+    "build:prod": "docker build -t martindevnow/${npm_package_name}_prod:latest -f Dockerfile .",
+    "start:prod": "docker rm mdn_${npm_package_name}_prod_container || true && docker run -it -p 8080:80 --name mdn_${npm_package_name}_prod_container martindevnow/${npm_package_name}_prod:latest",
+    "build:cypress": "docker build -t martindevnow/cypress:latest -f Dockerfile.cypress .",
+    "start:unit": "docker exec -it mdn_${npm_package_name}_dev_container npm run test:unit"
   },
   "dependencies": {
     "vue": "^2.5.17",
@@ -22,10 +22,8 @@
     "vuex": "^3.0.1"
   },
   "devDependencies": {
-    "@cypress/webpack-preprocessor": "^3.0.0",
     "@types/jest": "^23.1.4",
     "@vue/cli-plugin-babel": "^3.1.1",
-    "@vue/cli-plugin-e2e-cypress": "^3.1.1",
     "@vue/cli-plugin-typescript": "^3.1.1",
     "@vue/cli-plugin-unit-jest": "^3.1.1",
     "@vue/cli-service": "^3.1.1",

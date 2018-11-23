@@ -1,0 +1,8 @@
+FROM cypress/base:8 as e2eBuild
+WORKDIR /usr/src/e2e
+COPY ./cypress.json .
+COPY ./tests ./tests
+RUN npm init -y
+RUN CI=true npm i cypress
+RUN CI=true $(npm bin)/cypress install
+CMD ["./node_modules/.bin/cypress", "run"]
