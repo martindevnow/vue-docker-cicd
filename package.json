@@ -13,7 +13,7 @@
     "start:prod": "docker rm mdn_${npm_package_name}_prod_container || true && docker run -it -p 8080:80 --name mdn_${npm_package_name}_prod_container martindevnow/${npm_package_name}_prod:latest",
     "build:cypress": "docker build -t martindevnow/cypress:latest -f Dockerfile.cypress .",
     "start:unit": "docker exec -it mdn_${npm_package_name}_dev_container npm run test:unit",
-    "ci:test": "npm run build:dev && docker run --rm --mount type=bind,src=`pwd`,dst=/usr/src/app -it martindevnow/${npm_package_name}_dev:latest npm run test:unit"
+    "ci:test": "npm run build:dev && docker run --rm -it martindevnow/${npm_package_name}_dev:latest npm run test:unit"
   },
   "dependencies": {
     "vue": "^2.5.17",
