@@ -15,18 +15,15 @@ RUN npm install
 ## Prep application
 WORKDIR /usr/src/app
 
-## Copy Code to Image
-# Only copy Dockerfile for local, copy all for CI
-# Currently, this approach doesn't work
-# COPY Dockerfile ${CIRCLECI:+'.'} /usr/src/app/
-
-# This needs to be used instead
-# Image is ~190MB larger with code committed to Image
-COPY . /usr/src/app/
-
 ## Import Node Modules
 RUN cp -a /tmp/node_modules /usr/src/app/
 
 ## Run
 EXPOSE 8085
+CMD [ "npm", "run", "serve" ]
+
+FROM node:9.11.1 as ciBuild
+WORKDIR /usr/src/app
+COPY . /usr/src/app/
+COPY --from=devBuild /usr/src/app/node_modules ./node_modules
 CMD [ "npm", "run", "serve" ]
