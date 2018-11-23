@@ -1,8 +1,5 @@
 FROM node:9.11.1 as devBuild
 
-## Accept ENV Variables from the host
-ARG CIRCLECI
-
 ## Set ENV Variables in the Image
 ENV NODE_ENV=development
 ENV PORT=8085
