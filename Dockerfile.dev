@@ -1,21 +1,32 @@
 FROM node:9.11.1 as devBuild
-WORKDIR /tmp
-COPY package*.json /tmp/
-RUN CI=true npm install
-RUN echo $CIRCLE_BRANCH
-WORKDIR /usr/src/app
-# COPY . /usr/src/app/
-RUN cp -a /tmp/node_modules /usr/src/app/
+
+## Accept ENV Variables from the host
+ARG CIRCLECI
+
+## Set ENV Variables in the Image
 ENV NODE_ENV=development
 ENV PORT=8085
+
+## Prep node_modules
+WORKDIR /tmp
+COPY package*.json /tmp/
+RUN npm install
+
+## Prep application
+WORKDIR /usr/src/app
+
+## Copy Code to Image
+# Only copy Dockerfile for local, copy all for CI
+# Currently, this approach doesn't work
+# COPY Dockerfile ${CIRCLECI:+'.'} /usr/src/app/
+
+# This needs to be used instead
+# Image is ~190MB larger with code committed to Image
+COPY . /usr/src/app/
+
+## Import Node Modules
+RUN cp -a /tmp/node_modules /usr/src/app/
+
+## Run
 EXPOSE 8085
 CMD [ "npm", "run", "serve" ]
-
-##
-#   This has been replaced by just executing a command against the container
-##
-# Take from existing build and run tests against it
-# FROM node:9.11.1 as testBuild
-# WORKDIR /usr/src/app
-# COPY --from=devBuild /usr/src/app .
-# CMD [ "npm", "run", "test:unit" ]
