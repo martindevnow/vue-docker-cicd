@@ -2,7 +2,7 @@
 FROM node:9.11.1 as builder
 WORKDIR /tmp
 COPY package*.json /tmp/
-RUN CI=true npm install --only=prod
+RUN CI=true npm install
 WORKDIR /usr/src/app
 COPY . /usr/src/app/
 RUN cp -a /tmp/node_modules /usr/src/app/
