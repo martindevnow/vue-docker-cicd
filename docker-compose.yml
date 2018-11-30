@@ -21,5 +21,4 @@ services:
     build:
       context: .
       target: e2eBuild
-      dockerfile: Dockerfile.cypress
-    command: ./node_modules/.bin/cypress run
+      dockerfile: ./cypress/Dockerfile.cypress

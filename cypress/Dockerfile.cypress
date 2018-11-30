@@ -1,0 +1,20 @@
+FROM cypress/base:8 as e2eBuild
+
+# Copy NPM & Install
+COPY ./cypress/package.json /tmp/package.json
+RUN cd /tmp && CI=true npm install
+RUN CI=true /tmp/node_modules/.bin/cypress install
+RUN mkdir -p /e2e && cp -a /tmp/node_modules /e2e/
+
+WORKDIR /e2e
+# Copy files for config
+COPY ./cypress/cypress.json /e2e
+COPY ./cypress/tsconfig.json /e2e
+COPY ./cypress/cleanup.sh /e2e
+RUN chmod +x /e2e/cleanup.sh
+
+# Copy tests
+COPY ./tests ./tests
+
+# Run tests
+ENTRYPOINT ./node_modules/.bin/cypress run ; /bin/bash /e2e/cleanup.sh
