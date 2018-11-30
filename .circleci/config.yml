@@ -32,7 +32,8 @@ jobs:
       - run:
           name: End to End Testing
           command: |
-            docker-compose up --build
+            set -o pipefail ; 
+            docker-compose up --build  --abort-on-container-exit
       - run:  
           name: Deploy to Digital Ocean
           command: |
