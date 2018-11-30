@@ -3,7 +3,7 @@ services:
   web:
     build: 
       context: .
-      target: prodBuild
+      # target: prodBuild     # Need support for v3.4 (Docker-Compose)
       dockerfile: Dockerfile
     ports:
       - "8080:80"
@@ -20,5 +20,5 @@ services:
       - CYPRESS_browser=chrome
     build:
       context: .
-      target: e2eBuild
+      # target: e2eBuild    # Need support for v3.4 (Docker-Compose)
       dockerfile: ./cypress/Dockerfile.cypress
