@@ -3,20 +3,30 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "comment:vue": "# === Vue Commands === #",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit",
+
+    "comment:development": "# === Development Commands === #",
     "build:dev": "docker build --target devBuild -t martindevnow/${npm_package_name}_dev:latest -f Dockerfile.dev .",
     "start:dev": "docker rm mdn_${npm_package_name}_dev_container || true && docker run --rm -it -p 8085:8085 --mount type=bind,src=`pwd`,dst=/usr/src/app --name mdn_${npm_package_name}_dev_container martindevnow/${npm_package_name}_dev:latest npm run serve",
+    "start:unit": "docker exec -it mdn_${npm_package_name}_dev_container npm run test:unit",
+    
+    "comment:production": "# === Production Commands === #",
     "build:prod": "docker build -t martindevnow/${npm_package_name}_prod:latest -f Dockerfile .",
     "start:prod": "docker rm mdn_${npm_package_name}_prod_container || true && docker run -it -p 8080:80 --name mdn_${npm_package_name}_prod_container martindevnow/${npm_package_name}_prod:latest",
+
+    "comment:ci": "# === CircleCI Commands === #",
     "build:ci": "docker build --target ciBuild -t martindevnow/${npm_package_name}_ci:latest -f Dockerfile.dev .",
     "start:ci": "npm run build:ci && docker run --rm -it martindevnow/${npm_package_name}_ci:latest npm run test:unit",
-    "start:unit": "docker exec -it mdn_${npm_package_name}_dev_container npm run test:unit",
-    "comment:one": "# == e2e Testing Command == #",
+    
+    "comment:e2e": "# === e2e Testing Command === #",
     "build:cypress": "docker-compose build cypress",
-    "build-run:e2e": "docker-compose up"
+    "build-run:e2e": "docker-compose up",
+
+    "comment:deprecated": "# === Deprecated Commands === #"
   },
   "dependencies": {
     "vue": "^2.5.17",

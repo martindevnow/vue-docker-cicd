@@ -5,9 +5,8 @@ ENV NODE_ENV=development
 ENV PORT=8085
 
 ## Prep node_modules
-WORKDIR /tmp
 COPY package*.json /tmp/
-RUN npm install
+RUN cd /tmp && npm install
 
 ## Prep application
 WORKDIR /usr/src/app
