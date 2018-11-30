@@ -47,11 +47,24 @@ As stated above, updating the `.circleci/config.yml` will allow you to change se
 
 ## ToDos:
 
-- See if CircleCI can `scp` the `deply.sh` to the server configured in CircleCI. This would eliminate another manual step.
+- See if CircleCI can `scp` the `deploy.sh` to the server configured in CircleCI. This would eliminate another manual step.
 - Update `deploy.sh` to also confirm that the reverse proxy is also running. Currently this must be configured on a server before we can deploy to it (without port collisions, etc)
-- Look into running Cypress (e2e) tests as headless so that the GUI will close automatically upon successful completion and allow the CircleCI workflow to continue
+- ~~Look into running Cypress (e2e) tests as headless so that the GUI will close automatically upon successful completion and allow the CircleCI workflow to continue~~
 - Change the CircleCI configuration to use workflows and filter based on branch. It should run different processes based on which branch is being processed.
-- Consider other ways to run the tests within the container without requiring a separate staged build for this purpose.
+- ~~Consider other ways to run the tests within the container without requiring a separate staged build for this purpose.~~
   - Running `docker exec -it 80aeeeaa12d3 npm run test:unit` works, but need to either have a static container name (assuming the `CONTAINER_ID` can be substituted for the `CONTAINER_NAME`)
   - If not, need a way to get the container ID on the fly and run the command.
 - Deploy Docker Container for Feature Branch without requiring pushing to Docker Hub (if possible?)
+
+### e2e
+End to End tests are running in CI on Docker properly. There are only a few issues...
+
+1. Need to get the exit code of the test runner
+2. Want to capture the headless output / test results
+3. Need to persist the above (results, screenshots, and video)
+4. Need to clean up the above, move it to it's proper home
+5. Stop the Docker-Compose network and attached containers
+6. Notify people tests are done
+7. Exit based on the test results
+
+- The exit code of the headless tests needs to be piped or passed to the next script (the cleanup script)
