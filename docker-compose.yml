@@ -3,14 +3,23 @@ services:
   web:
     build: 
       context: .
-      target: devBuild
+      target: prodBuild
       dockerfile: Dockerfile
     ports:
-      - "8085:8085"
-    volumes:
-      - .:/usr/src/app/:rw
+      - "8080:80"
     tty: true
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
     command: >
-      npm run serve
+      http-server -p 80 /app
+  cypress:
+    depends_on: 
+      - web
+    environment:
+      - CYPRESS_baseUrl=http://web:80/
+      - CYPRESS_browser=chrome
+    build:
+      context: .
+      target: e2eBuild
+      dockerfile: Dockerfile.cypress
+    command: ./node_modules/.bin/cypress run
