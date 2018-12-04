@@ -22,14 +22,22 @@ jobs:
       - run:
           name: Testing Application
           command: |
-            docker build --target testBuild -t martindevnow/$IMAGE_NAME-test .
-            docker run --rm --name vue-docker-cicd-test-${CIRCLE_BUILD_NUM} martindevnow/$IMAGE_NAME-test
+            npm run start:ci
       - run: 
           name: Build and Push Docker Image
           command: |
-            docker build --target prodBuild -t martindevnow/$IMAGE_NAME:$TAG .
+            docker build -f Dockerfile -t martindevnow/$IMAGE_NAME:$TAG .
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push martindevnow/$IMAGE_NAME:$TAG
+      - run:
+          name: End to End Testing
+          command: |
+            echo $CIRCLE_NODE_INDEX
+            mkdir -p ./results/$TAG/screenshots ./results/$TAG/videos
+            docker-compose build
+            docker-compose run --rm cypress ./node_modules/.bin/cypress run --config screenshotsFolder=/results/$TAG/screenshots,videosFolder=/results/$TAG/videos
+      - store_artifacts:
+          path: ./results
       - run:  
           name: Deploy to Digital Ocean
           command: |

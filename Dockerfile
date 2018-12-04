@@ -1,25 +1,12 @@
-FROM node:9.11.1 as devBuild
-WORKDIR /tmp
+# Builder
+FROM node:9.11.1 as builder
 COPY package*.json /tmp/
-RUN CI=true npm install
+RUN cd /tmp && CI=true npm install
+
 WORKDIR /usr/src/app
 COPY . /usr/src/app/
 RUN cp -a /tmp/node_modules /usr/src/app/
-ENV NODE_ENV=development
-ENV PORT=8085
-EXPOSE 8085
-CMD [ "npm", "run", "serve" ]
-
-# Take from existing build and run tests against it
-FROM node:9.11.1 as testBuild
-WORKDIR /usr/src/app
-COPY --from=devBuild /usr/src/app .
-CMD [ "npm", "run", "test:unit" ]
-
-# Builder
-FROM node:9.11.1 as builder
-WORKDIR /usr/src/app
-COPY --from=devBuild /usr/src/app .
+ENV NODE_ENV=production
 RUN npm run build
 
 # Make production build
