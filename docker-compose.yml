@@ -22,3 +22,7 @@ services:
       context: .
       # target: e2eBuild    # Need support for v3.4 (Docker-Compose)
       dockerfile: ./cypress/Dockerfile.cypress
+    volumes: 
+      - type: bind
+        source: ./results
+        target: /results

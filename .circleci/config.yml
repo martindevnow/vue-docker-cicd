@@ -31,9 +31,12 @@ jobs:
             docker push martindevnow/$IMAGE_NAME:$TAG
       - run:
           name: End to End Testing
+          store_artifacts:
+            path: /results
+            destination: prefix
           command: |
-            set -o pipefail ; 
-            docker-compose up --build  --abort-on-container-exit
+            mkdir -p /results/$TAG/screenshots /results/$TAG/videos
+            docker-compose run --rm cypress ./node_modules/.bin/cypress run --config screenshotsFolder=/results/$TAG/screenshots,videosFolder=/results/$TAG/videos
       - run:  
           name: Deploy to Digital Ocean
           command: |
