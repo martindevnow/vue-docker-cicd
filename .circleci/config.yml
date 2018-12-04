@@ -42,3 +42,25 @@ jobs:
           name: Deploy to Digital Ocean
           command: |
             ssh -o StrictHostKeyChecking=no ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "/bin/bash /root/deploy.sh $IMAGE_NAME:$TAG ${SUBDOMAIN}"
+workflows:
+  version: 2
+  jobs:
+    # Provision [*]
+      # Set the local environment variables required for all following jobs
+      # Log the environment to a remote host for analysis if required
+    # Lint [*]
+      # Run the easiest check for the linting (No docker should be required)
+    # Unit tests [*]
+      # Unit tests should all be passing
+    # Build for Production [*]
+      # Build the application for production - Shouldn't break the build
+    # e2e Testing [*?]
+      # Run e2e Tests against the Production Build
+    # Feature Deployment [^(master|develop)]
+      # Deploy with a custom virtual host
+    # Staging Deployment [develop]
+      # Develop branch should be deployed to the "Staging" server
+    # UAT/Production Deployment
+      # Master branch should deploy to UAT or Master 
+      # Master deployment could be separate step and held for manual deploy
+    
