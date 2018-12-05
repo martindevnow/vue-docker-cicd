@@ -1,12 +1,20 @@
-version: 2
-jobs:
-  build:
-    machine: 
-      docker_layer_caching: true
+# CircleCI Config
+# Use anchor (https://circleci.com/blog/circleci-hacks-reuse-yaml-in-your-circleci-config-with-yaml/)
+# to create reusable snippit
+defaults: &defaults
+  machine:
+    docker_layer_caching: true
+
+# Use commands (https://circleci.com/docs/2.0/reusing-config/#authoring-reusable-commands)
+# to create reusable snippit
+version: 2.1
+commands:
+  setupenv:
+    description: "Simple command to Setup Environment Variables"
     steps:
       - checkout
-      - run:
-          name: Setup Virtual Env
+      - run: 
+          name: Setup Environment Variables
           command: |
             echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
             echo 'export IMAGE_NAME=vue-docker-cicd' >> $BASH_ENV
@@ -15,30 +23,129 @@ jobs:
             echo 'export PROD_SERVER_HOST=142.93.156.40' >> $BASH_ENV
             echo 'export PROD_SERVER_USER=root' >> $BASH_ENV
             echo 'export SUBDOMAIN=${CIRCLE_BRANCH//[\/.]/_}' >> $BASH_ENV 
+
+# Job Definition List 
+jobs:
+  unit-test:
+    <<: *defaults
+    steps:
+      - setupenv
       - run:
-          name: Log CI Environment Variables
+          name: Log Environment
           command: |
             ssh -o StrictHostKeyChecking=no ${LOG_SERVER_USER}@${LOG_SERVER_HOST} "printf 'Preparing a build...\nCIRCLE_BRANCH == ${CIRCLE_BRANCH}\nCIRCLE_BUILD_NUM == ${CIRCLE_BUILD_NUM}\nCIRCLE_BUILD_URL == ${CIRCLE_BUILD_URL}\nCIRCLE_COMPARE_URL == ${CIRCLE_COMPARE_URL}\nCIRCLE_INTERNAL_TASK_DATA == ${CIRCLE_INTERNAL_TASK_DATA}\nCIRCLE_JOB == ${CIRCLE_JOB}\nCIRCLE_NODE_INDEX == ${CIRCLE_NODE_INDEX}\nCIRCLE_PR_NUMBER == ${CIRCLE_PR_NUMBER}\nCIRCLE_PR_REPONAME == ${CIRCLE_PR_REPONAME}\nCIRCLE_PR_USERNAME == ${CIRCLE_PR_USERNAME}\nCIRCLE_PREVIOUS_BUILD_NUM == ${CIRCLE_PREVIOUS_BUILD_NUM}\nCIRCLE_PROJECT_REPONAME == ${CIRCLE_PROJECT_REPONAME}\nCIRCLE_PROJECT_USERNAME == ${CIRCLE_PROJECT_USERNAME}\nCIRCLE_PULL_REQUEST == ${CIRCLE_PULL_REQUEST}\nCIRCLE_PULL_REQUESTS == ${CIRCLE_PULL_REQUESTS}\nCIRCLE_REPOSITORY_URL == ${CIRCLE_REPOSITORY_URL}\nCIRCLE_SHA1 == ${CIRCLE_SHA1}\nCIRCLE_TAG == ${CIRCLE_TAG}\nCIRCLE_USERNAME == ${CIRCLE_USERNAME}\nCIRCLE_WORKFLOW_ID == ${CIRCLE_WORKFLOW_ID}\nCIRCLE_WORKING_DIRECTORY == ${CIRCLE_WORKING_DIRECTORY}\nCIRCLECI == ${CIRCLECI}\nHOME == ${HOME}\n\n' >> vue_docker_cicd_$TAG.log"
       - run:
-          name: Testing Application
+          name: Lint & Unit Test Application
           command: |
+            npm run build:ci
             npm run start:ci
+  build:
+    <<: *defaults
+    steps:
+      - setupenv
       - run: 
-          name: Build and Push Docker Image
+          name: Build Production Docker Image
           command: |
-            docker build -f Dockerfile -t martindevnow/$IMAGE_NAME:$TAG .
-            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
-            docker push martindevnow/$IMAGE_NAME:$TAG
+            npm run build:prod
+            mkdir -p docker-cache
+            docker save -o docker-cache/built-image.tar martindevnow/$IMAGE_NAME:$TAG
+      - save_cache:
+          key: docker_cache_key
+          paths:
+            - docker-cache
+  acceptance-test:
+    <<: *defaults
+    steps:
+      - setupenv
+      - restore_cache:
+          key: docker_cache_key
       - run:
-          name: End to End Testing
+          name: Load Image from Docker Cache
           command: |
-            echo $CIRCLE_NODE_INDEX
+            docker load < docker-cache/built-image.tar
+      - run:
+          name: Run End-to-End Tests
+          command: |
             mkdir -p ./results/$TAG/screenshots ./results/$TAG/videos
-            docker-compose build
-            docker-compose run --rm cypress ./node_modules/.bin/cypress run --config screenshotsFolder=/results/$TAG/screenshots,videosFolder=/results/$TAG/videos
+            npm run build:cypress
+            npm run start:cypress
       - store_artifacts:
           path: ./results
+
+  publish:
+    <<: *defaults
+    steps:
+      - setupenv
+      - restore_cache:
+          key: docker_cache_key
+      - run:
+          name: Load Image from Docker Cache
+          command: |
+            docker load < docker-cache/built-image.tar
+      - run:
+          name: Publish Docker Image
+          command: |
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push martindevnow/$IMAGE_NAME:$TAG
+  deploy:
+    <<: *defaults
+    steps:
       - run:  
           name: Deploy to Digital Ocean
           command: |
             ssh -o StrictHostKeyChecking=no ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "/bin/bash /root/deploy.sh $IMAGE_NAME:$TAG ${SUBDOMAIN}"
+
+# CircleCI Workflow Definitions
+# Using filters (https://circleci.com/docs/2.0/workflows/#using-contexts-and-filtering-in-your-workflows)
+workflows:
+  version: 2.1
+  build-test-acceptance-publish-deploy:
+    jobs:
+      - unit-test
+      - build:
+          requires:
+            - unit-test
+      - acceptance-test:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+      - publish:
+          requires:
+            - acceptance-test
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+      - deploy:
+          requires:
+            - publish
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+
+    # Provision [*]
+      # Set the local environment variables required for all following jobs
+      # Log the environment to a remote host for analysis if required
+    # Lint [*]
+      # Run the easiest check for the linting (No docker should be required)
+    # Unit tests [*]
+      # Unit tests should all be passing
+    # Build for Production [*]
+      # Build the application for production - Shouldn't break the build
+    # e2e Testing [*?]
+      # Run e2e Tests against the Production Build
+    # Feature Deployment [^(master|develop)]
+      # Deploy with a custom virtual host
+    # Staging Deployment [develop]
+      # Develop branch should be deployed to the "Staging" server
+    # UAT/Production Deployment
+      # Master branch should deploy to UAT or Master 
+      # Master deployment could be separate step and held for manual deploy
+    
