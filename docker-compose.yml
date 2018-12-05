@@ -1,10 +1,7 @@
 version: '3.2'
 services:
   web:
-    build: 
-      context: .
-      # target: prodBuild     # Need support for v3.4 (Docker-Compose)
-      dockerfile: Dockerfile
+    image: martindevnow/${IMAGE_NAME}:${TAG}
     ports:
       - "8080:80"
     tty: true
