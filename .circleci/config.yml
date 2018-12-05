@@ -23,6 +23,7 @@ commands:
             echo 'export PROD_SERVER_HOST=142.93.156.40' >> $BASH_ENV
             echo 'export PROD_SERVER_USER=root' >> $BASH_ENV
             echo 'export SUBDOMAIN=${CIRCLE_BRANCH//[\/.]/_}' >> $BASH_ENV 
+            printf 'TAG=${TAG}; SUBDOMAIN=${SUBDOMAIN}'
 # Need to find a way to dynamically determine 
 # if the docker image built should be cached
 # like this approach attempts
@@ -43,7 +44,7 @@ commands:
                   mkdir -p docker-cache
                   docker save -o docker-cache/built-image.tar martindevnow/$IMAGE_NAME:$TAG
             - save_cache:
-                key: docker_cache_key-{{ .BuildNum }}
+                key: docker_cache_key-{{ .Environment.CIRCLE_SHA1 }}
                 paths:
                   - docker-cache
 
@@ -87,7 +88,7 @@ jobs:
     steps:
       - setupenv
       - restore_cache:
-          key: docker_cache_key-{{ .BuildNum }}
+          key: docker_cache_key-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Load Image from Docker Cache
           command: |
@@ -106,7 +107,7 @@ jobs:
     steps:
       - setupenv
       - restore_cache:
-          key: docker_cache_key-{{ .BuildNum }}
+          key: docker_cache_key-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Load Image from Docker Cache
           command: |
