@@ -1,15 +1,32 @@
 {
-  "name": "hmr",
-  "version": "0.1.0",
+  "name": "vue-docker-cicd",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
+    "comment:vue-commands-inside-container": "# === Vue Commands === #",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit",
-    "docker:dev": "docker-compose up",
-    "docker:test": "docker build --target testBuild -t martindevnow/vue-docker-cicd:latest -f Dockerfile  . && docker run --rm=true martindevnow/vue-docker-cicd:latest"
+    "test:lint-unit": "npm run lint && npm run test:unit",
+
+    "comment:local-development": "# === Development Commands === #",
+    "build:dev": "docker build --target devBuild -t martindevnow/${npm_package_name}_dev:latest -f Dockerfile.dev .",
+    "start:dev": "docker rm mdn_${npm_package_name}_dev_container || true && docker run --rm -it -p 8085:8085 --mount type=bind,src=`pwd`,dst=/usr/src/app --name mdn_${npm_package_name}_dev_container martindevnow/${npm_package_name}_dev:latest npm run serve",
+    "start:unit": "docker exec -it mdn_${npm_package_name}_dev_container npm run test:unit",
+    
+    "comment:production": "# === Production Commands === #",
+    "build:prod": "docker build -t martindevnow/${npm_package_name}:${TAG:=latest} -f Dockerfile .",
+
+    "comment:ci": "# === CircleCI Commands === #",
+    "build:ci": "docker build --target ciBuild -t martindevnow/${npm_package_name}_ci:latest -f Dockerfile.dev .",
+    "start:ci": "docker run --rm -it martindevnow/${npm_package_name}_ci:latest npm run test:lint-unit",
+    
+    "comment:e2e": "# === e2e Testing Command === #",
+    "build:cypress": "IMAGE_NAME=${npm_package_name} TAG={$TAG:=latest} docker-compose build cypress",
+    "start:cypress": "IMAGE_NAME=${npm_package_name} TAG=${TAG:=latest} docker-compose run --rm cypress ./node_modules/.bin/cypress run --config screenshotsFolder=/results/$TAG/screenshots,videosFolder=/results/$TAG/videos",
+
+    "comment:deprecated": "# === Deprecated Commands === #"
   },
   "dependencies": {
     "vue": "^2.5.17",
@@ -19,10 +36,8 @@
     "vuex": "^3.0.1"
   },
   "devDependencies": {
-    "@cypress/webpack-preprocessor": "^3.0.0",
     "@types/jest": "^23.1.4",
     "@vue/cli-plugin-babel": "^3.1.1",
-    "@vue/cli-plugin-e2e-cypress": "^3.1.1",
     "@vue/cli-plugin-typescript": "^3.1.1",
     "@vue/cli-plugin-unit-jest": "^3.1.1",
     "@vue/cli-service": "^3.1.1",

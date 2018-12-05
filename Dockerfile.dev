@@ -1,15 +1,25 @@
-FROM node:9.11.1
+FROM node:9.11.1 as devBuild
 
-WORKDIR /tmp
-COPY package*.json /tmp/
-RUN npm install
-
-WORKDIR /usr/src/app
-COPY . /usr/src/app/
-RUN cp -a /tmp/node_modules /usr/src/app/
-
+## Set ENV Variables in the Image
 ENV NODE_ENV=development
 ENV PORT=8085
 
+## Prep node_modules
+COPY package*.json /tmp/
+RUN cd /tmp && npm install
+
+## Prep application
+WORKDIR /usr/src/app
+
+## Import Node Modules
+RUN cp -a /tmp/node_modules /usr/src/app/
+
+## Run
 EXPOSE 8085
+CMD [ "npm", "run", "serve" ]
+
+FROM node:9.11.1 as ciBuild
+WORKDIR /usr/src/app
+COPY . /usr/src/app/
+COPY --from=devBuild /usr/src/app/node_modules ./node_modules
 CMD [ "npm", "run", "serve" ]

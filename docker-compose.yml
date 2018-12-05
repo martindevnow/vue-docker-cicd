@@ -1,16 +1,25 @@
-version: '3.4'
+version: '3.2'
 services:
   web:
-    build: 
-      context: .
-      target: devBuild
-      dockerfile: Dockerfile
+    image: martindevnow/${IMAGE_NAME}:${TAG}
     ports:
-      - "8085:8085"
-    volumes:
-      - .:/usr/src/app/:rw
+      - "8080:80"
     tty: true
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
     command: >
-      npm run serve
+      http-server -p 80 /app
+  cypress:
+    depends_on: 
+      - web
+    environment:
+      - CYPRESS_baseUrl=http://web:80/
+      - CYPRESS_browser=chrome
+    build:
+      context: .
+      # target: e2eBuild    # Need support for v3.4 (Docker-Compose)
+      dockerfile: ./cypress/Dockerfile.cypress
+    volumes: 
+      - type: bind
+        source: ./results
+        target: /results
