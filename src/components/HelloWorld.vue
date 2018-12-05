@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-<h2>Test!!!</h2>
+    <h2>Latest on Master v0.2.0</h2>
     <p>
       For guide and recipes on how to configure / customize this project,<br>
       check out the
