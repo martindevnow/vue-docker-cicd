@@ -120,6 +120,7 @@ jobs:
   deploy:
     <<: *defaults
     steps:
+      - setupenv
       - run:  
           name: Deploy to Digital Ocean
           command: |
