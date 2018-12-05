@@ -27,7 +27,6 @@ commands:
 # if the docker image built should be cached
 # like this approach attempts
 # [[ "$CIRCLE_BRANCH" == \(develop\|master\) ]] && echo 'export CACHE=true' || echo 'export CACHE=false'; echo $CACHE; echo $CIRCLE_BRANCH'
-
   cache-app:
     description: "Cache the Production Docker Image"
     parameters:
@@ -63,8 +62,16 @@ jobs:
           command: |
             npm run build:ci
             npm run start:ci
-
   build:
+    <<: *defaults
+    steps:
+      - setupenv
+      - run: 
+          name: Build Production Docker Image
+          command: |
+            npm run build:prod
+
+  build-and-cache:
     <<: *defaults
     steps:
       - setupenv
@@ -127,9 +134,22 @@ workflows:
       - build:
           requires:
             - unit-test
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+      - build-and-cache:
+          requires:
+            - unit-test
+          filters:
+            branches:
+              only:
+                - develop
+                - master
       - acceptance-test:
           requires:
-            - build
+            - build-and-cache
           filters:
             branches:
               only:
