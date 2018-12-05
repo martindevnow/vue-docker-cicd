@@ -24,7 +24,7 @@
     
     "comment:e2e": "# === e2e Testing Command === #",
     "build:cypress": "IMAGE_NAME=${npm_package_name} TAG={$TAG:=latest} docker-compose build cypress",
-    "start:cypress": "IMAGE_NAME=${npm_package_name} TAG=${TAG:=latest} docker-compose run --rm cypress ./node_modules/.bin/cypress run --config screenshotsFolder=/results/$TAG/screenshots,videosFolder=/results/$TAG/videos",
+    "start:cypress": "IMAGE_NAME=${npm_package_name} TAG=${TAG:=latest} docker-compose run --rm cypress ./node_modules/.bin/cypress run",
 
     "comment:deprecated": "# === Deprecated Commands === #"
   },
