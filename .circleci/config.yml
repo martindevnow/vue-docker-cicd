@@ -1,6 +1,7 @@
 # CircleCI Config
 # Use anchor (https://circleci.com/blog/circleci-hacks-reuse-yaml-in-your-circleci-config-with-yaml/)
 # to create reusable snippit
+# Use docker_layer_caching for optimizations (https://circleci.com/docs/2.0/optimizations/)
 defaults: &defaults
   machine:
     docker_layer_caching: true
@@ -25,10 +26,10 @@ commands:
             echo 'export PROD_SERVER_USER=root' >> $BASH_ENV
             echo 'export SUBDOMAIN=${CIRCLE_BRANCH//[\/.]/_}' >> $BASH_ENV 
             printf 'TAG=${TAG}; SUBDOMAIN=${SUBDOMAIN}; PACKAGE_VERSION=${PACKAGE_VERSION}'
-# Need to find a way to dynamically determine 
-# if the docker image built should be cached
-# like this approach attempts
-# [[ "$CIRCLE_BRANCH" == \(develop\|master\) ]] && echo 'export CACHE=true' || echo 'export CACHE=false'; echo $CACHE; echo $CIRCLE_BRANCH'
+# Use cache for Docker Image (https://circleci.com/docs/2.0/configuration-reference/#save_cache)
+# And restore from cache (https://circleci.com/docs/2.0/configuration-reference/#restore_cache)
+# Use the `when` step to trigger dynamically (https://circleci.com/docs/2.0/configuration-reference/#the-when-attribute)
+# and (https://circleci.com/docs/2.0/configuration-reference/#the-when-step-requires-version-21)
   cache-app:
     description: "Cache the Production Docker Image"
     parameters:
@@ -64,6 +65,7 @@ jobs:
           command: |
             npm run build:ci
             npm run start:ci
+
   build:
     <<: *defaults
     steps:
@@ -118,6 +120,7 @@ jobs:
           command: |
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push martindevnow/$IMAGE_NAME:$TAG
+
   deploy:
     <<: *defaults
     steps:
@@ -129,6 +132,7 @@ jobs:
 
 # CircleCI Workflow Definitions
 # Using filters (https://circleci.com/docs/2.0/workflows/#using-contexts-and-filtering-in-your-workflows)
+# Docs: (https://circleci.com/docs/2.0/workflows/)
 workflows:
   version: 2.1
   build-test-acceptance-publish-deploy:
@@ -174,23 +178,4 @@ workflows:
               only:
                 - develop
                 - master
-
-    # Provision [*]
-      # Set the local environment variables required for all following jobs
-      # Log the environment to a remote host for analysis if required
-    # Lint [*]
-      # Run the easiest check for the linting (No docker should be required)
-    # Unit tests [*]
-      # Unit tests should all be passing
-    # Build for Production [*]
-      # Build the application for production - Shouldn't break the build
-    # e2e Testing [*?]
-      # Run e2e Tests against the Production Build
-    # Feature Deployment [^(master|develop)]
-      # Deploy with a custom virtual host
-    # Staging Deployment [develop]
-      # Develop branch should be deployed to the "Staging" server
-    # UAT/Production Deployment
-      # Master branch should deploy to UAT or Master 
-      # Master deployment could be separate step and held for manual deploy
     
