@@ -23,6 +23,30 @@ commands:
             echo 'export PROD_SERVER_HOST=142.93.156.40' >> $BASH_ENV
             echo 'export PROD_SERVER_USER=root' >> $BASH_ENV
             echo 'export SUBDOMAIN=${CIRCLE_BRANCH//[\/.]/_}' >> $BASH_ENV 
+# Need to find a way to dynamically determine 
+# if the docker image built should be cached
+# like this approach attempts
+# [[ "$CIRCLE_BRANCH" == \(develop\|master\) ]] && echo 'export CACHE=true' || echo 'export CACHE=false'; echo $CACHE; echo $CIRCLE_BRANCH'
+
+  cache-app:
+    description: "Cache the Production Docker Image"
+    parameters:
+      cache:
+        type: boolean
+        default: false
+    steps:
+      - when:
+          condition: <<parameters.cache>>
+          steps:  
+            - run:
+                name: Save Docker Image
+                command: |
+                  mkdir -p docker-cache
+                  docker save -o docker-cache/built-image.tar martindevnow/$IMAGE_NAME:$TAG
+            - save_cache:
+                key: docker_cache_key
+                paths:
+                  - docker-cache
 
 # Job Definition List 
 jobs:
@@ -39,6 +63,7 @@ jobs:
           command: |
             npm run build:ci
             npm run start:ci
+
   build:
     <<: *defaults
     steps:
@@ -47,12 +72,9 @@ jobs:
           name: Build Production Docker Image
           command: |
             npm run build:prod
-            mkdir -p docker-cache
-            docker save -o docker-cache/built-image.tar martindevnow/$IMAGE_NAME:$TAG
-      - save_cache:
-          key: docker_cache_key
-          paths:
-            - docker-cache
+      - cache-app:
+          cache: true
+
   acceptance-test:
     <<: *defaults
     steps:
