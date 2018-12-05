@@ -43,7 +43,7 @@ commands:
                   mkdir -p docker-cache
                   docker save -o docker-cache/built-image.tar martindevnow/$IMAGE_NAME:$TAG
             - save_cache:
-                key: docker_cache_key
+                key: docker_cache_key-{{ .BuildNum }}
                 paths:
                   - docker-cache
 
@@ -87,7 +87,7 @@ jobs:
     steps:
       - setupenv
       - restore_cache:
-          key: docker_cache_key
+          key: docker_cache_key-{{ .BuildNum }}
       - run:
           name: Load Image from Docker Cache
           command: |
@@ -106,7 +106,7 @@ jobs:
     steps:
       - setupenv
       - restore_cache:
-          key: docker_cache_key
+          key: docker_cache_key-{{ .BuildNum }}
       - run:
           name: Load Image from Docker Cache
           command: |
