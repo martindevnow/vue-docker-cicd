@@ -72,9 +72,30 @@ As stated above, updating the `.circleci/config.yml` will allow you to change se
 
 ## ToDos:
 
+### Packaging/Productizing
+I would like to convert much of the work done here into an NPM package that I can add to my projects. This would work by `npm install`ing this package into my app. The package, on postinstall, would add the .env file (or w/e method we use for setting these flags/variables), and import commands into the `scripts` property of the main `package.json`
+
+### Deployment
 - Have CircleCI `scp` the `deploy.sh` to the server configured in CircleCI during Deploy step
 - Update `deploy.sh` to also confirm that the reverse proxy is also running. Currently this must be configured on a server before we can deploy to it (without port collisions, etc)
 
+### Project "Variables"
+- Where should all the project specific configuration/variables be stored?
+    - Need to have them in one spot
+    - Some things NEED to be somewhere specific (package.json has version and name)
+    - Some are defined in the config.yml
+- Developers shouldn't NEED their own `.env` file since it's all in docker
+    - Could store everything in .env (have a LITTLE duplication between `package.json` and `.env`)
+- There must be a better way to export the Environment Variables into CircleCI/npm commands
+- 
+
+### Versioning
+- What are best practices for versioning Docker Images? 
+    - Version #? + commit SHA? + Build #?
+    - When to version? (only in CI?)
+    - When to version bump?
+- Script to version bump?
+- How to access package.json's "version" from outside NPM commands
 
 ## Using The CICD Pipeline in Another Project
 
