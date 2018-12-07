@@ -4,7 +4,7 @@ This project was done as a Proof of Concept to build a Continuous Integration an
 
 ## Project Requirements
 
-This project requires Docker to run
+This project requires Docker to run. If you are hooking up the deployment section as well, you will need to follow the steps [here](https://github.com/jwilder/nginx-proxy) to setup the reverse nginx proxy.
 
 ### Local Development
 
