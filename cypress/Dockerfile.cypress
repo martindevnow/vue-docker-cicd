@@ -10,8 +10,6 @@ WORKDIR /e2e
 # Copy files for config
 COPY ./cypress/cypress.json /e2e
 COPY ./cypress/tsconfig.json /e2e
-COPY ./cypress/cleanup.sh /e2e
-RUN chmod +x /e2e/cleanup.sh
 
 # Copy tests
 COPY ./tests ./tests
