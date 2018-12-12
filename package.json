@@ -12,7 +12,7 @@
 
     "comment:local-development": "# === Development Commands === #",
     "build:dev": "docker build --target devBuild -t martindevnow/${npm_package_name}_dev:latest -f Dockerfile.dev .",
-    "start:dev": "docker rm mdn_${npm_package_name}_dev_container || true && docker run --rm -it -p 8085:8085 --mount type=bind,src=`pwd`,dst=/usr/src/app --name mdn_${npm_package_name}_dev_container martindevnow/${npm_package_name}_dev:latest npm run serve",
+    "start:dev": "docker rm mdn_${npm_package_name}_dev_container || true && docker run --rm -it -p 8085:8085 --mount type=bind,src=`pwd`,dst=/usr/src/app -v /usr/src/app/node_modules --name mdn_${npm_package_name}_dev_container martindevnow/${npm_package_name}_dev:latest npm run serve",
     "start:unit": "docker exec -it mdn_${npm_package_name}_dev_container npm run test:unit",
     
     "comment:production": "# === Production Commands === #",
@@ -24,7 +24,7 @@
     
     "comment:e2e": "# === e2e Testing Command === #",
     "build:cypress": "IMAGE_NAME=${npm_package_name} TAG={$TAG:=latest} docker-compose build cypress",
-    "start:cypress": "IMAGE_NAME=${npm_package_name} TAG=${TAG:=latest} docker-compose run --rm cypress ./node_modules/.bin/cypress run --config screenshotsFolder=/results/$TAG/screenshots,videosFolder=/results/$TAG/videos",
+    "start:cypress": "IMAGE_NAME=${npm_package_name} TAG=${TAG:=latest} docker-compose run --rm cypress ./node_modules/.bin/cypress run",
 
     "comment:deprecated": "# === Deprecated Commands === #"
   },

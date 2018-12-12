@@ -4,7 +4,7 @@ This project was done as a Proof of Concept to build a Continuous Integration an
 
 ## Project Requirements
 
-This project requires Docker to run
+This project requires Docker to run. If you are hooking up the deployment section as well, you will need to follow the steps [here](https://github.com/jwilder/nginx-proxy) to setup the reverse nginx proxy.
 
 ### Local Development
 
@@ -72,27 +72,72 @@ As stated above, updating the `.circleci/config.yml` will allow you to change se
 
 ## ToDos:
 
-### General
+### Packaging/Productizing
+I would like to convert much of the work done here into an NPM package that I can add to my projects. This would work by `npm install`ing this package into my app. The package, on postinstall, would add the .env file (or w/e method we use for setting these flags/variables), and import commands into the `scripts` property of the main `package.json`
 
-- See if CircleCI can `scp` the `deploy.sh` to the server configured in CircleCI. This would eliminate another manual step.
+### Deployment
+- Have CircleCI `scp` the `deploy.sh` to the server configured in CircleCI during Deploy step
 - Update `deploy.sh` to also confirm that the reverse proxy is also running. Currently this must be configured on a server before we can deploy to it (without port collisions, etc)
-- ~~Look into running Cypress (e2e) tests as headless so that the GUI will close automatically upon successful completion and allow the CircleCI workflow to continue~~
-- ~~Change the CircleCI configuration to use workflows and filter based on branch. It should run different processes based on which branch is being processed.~~
-- ~~Consider other ways to run the tests within the container without requiring a separate staged build for this purpose.~~
-  - ~~Running `docker exec -it 80aeeeaa12d3 npm run test:unit` works, but need to either have a static container name (assuming the `CONTAINER_ID` can be substituted for the `CONTAINER_NAME`)~~
-  - ~~If not, need a way to get the container ID on the fly and run the command.~~
-- Deploy Docker Container for Feature Branch without requiring pushing to Docker Hub (if possible?)
 
-### e2e
+### Project "Variables"
+- Where should all the project specific configuration/variables be stored?
+    - Need to have them in one spot
+    - Some things NEED to be somewhere specific (package.json has version and name)
+    - Some are defined in the config.yml
+- Developers shouldn't NEED their own `.env` file since it's all in docker
+    - Could store everything in .env (have a LITTLE duplication between `package.json` and `.env`)
+- There must be a better way to export the Environment Variables into CircleCI/npm commands
+- 
 
-End to End tests are running in CI on Docker properly. There are only a few issues...
+### Versioning
+- What are best practices for versioning Docker Images? 
+    - Version #? + commit SHA? + Build #?
+    - When to version? (only in CI?)
+    - When to version bump?
+- Script to version bump?
+- How to access package.json's "version" from outside NPM commands
 
-1. ~~Need to get the exit code of the test runner~~
-2. ~~Want to capture the headless output / test results~~
-3. ~~Need to persist the above (results, screenshots, and video)~~
-4. ~~Need to clean up the above, move it to it's proper home~~
-5. ~~Stop the Docker-Compose network and attached containers~~
-6. Notify people tests are done
-7. ~~Exit based on the test results~~
+## Using The CICD Pipeline in Another Project
 
-- ~~The exit code of the headless tests needs to be piped or passed to the next script (the cleanup script)~~
+If you wish to use this CICD pipeline in another project, there are several files you will need to import to your project.
+
+### Important Files
+
+1. `.circleci/config.yml`
+    - Be sure to update the Environment Variables that are set in the `setupenv` command
+2. `cypress/*`
+    - Update the `cypress.json` to specify any plugins you want
+    - No update to `Dockerfile.cypress` required
+    - No update `package.json` required
+    - No update to `tsconfig.json` required
+3. `docker-compose.yml`
+This file is responsible for running e2e tests through Cypress. There are few fields you can update or add to this file.
+    - `environment` if you want different folders/plugins/url, etc [These can also be provided at run time through the `npm` command found in the `package.json`]
+    - `volumes` I decided to store the 
+4. `Dockerfile`
+    - You may need to modify the build step (if you have a different NPM command to build) any other ENV variables required
+5. `Dockerfile.dev` 
+    - You can update the `port` if you want and specify any other ENV variables required
+6. `package.json`
+You don't need to copy the whole file, of course. However, the majority of the docker commands are listed in here. Because I could not comment in the `*.json` file, I've added comments as commands.
+
+### Package.json
+
+#### Framework Specific
+There are commands that you will need to change based on your framework. Under the comment `comment:vue-commands-inside-container` there are 5 commands. These are meant to be run within the Docker container. These will be specific to your Framework.
+
+#### Local Development
+The commands under the comment `comment:local-development` are meant to be used for local development. 
+
+#### Building Production
+The command under `comment:production` is the command to building the production ready image.
+
+#### CI/CD Commands
+The commands found under `comment:ci` run the unit tests in a Continuous Integration environment. This is run against the development build to leverage the `devDependencies` for running the tests. [**Note:** If you are running locally with `start:dev`, you can run your unit tests against your running container with `start:unit` to avoid rebuilding your `Dockerfile.dev` Docker image ]
+
+#### End-to-End Testing
+The commands found at `comment:e2e` are used in CI as well (but can be run locally too). These use the `docker-compose` to bring up the latest Production build of the app, and run Cypress against it. You should be sure to rebuild your production ready app before running Cypress against it if you have made any changes to your application (`build:prod`). (If your tests remain the same, you do NOT need to rebuild Cypress)
+
+If you only made changes to the e2e tests, you only need to rebuild Cypress (`build:cypress`) before running again.
+
+
