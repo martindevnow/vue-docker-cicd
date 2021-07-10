@@ -19,11 +19,12 @@ commands:
           command: |
             echo "export PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]')" >> $BASH_ENV
             echo 'export TAG=${CIRCLE_SHA1}' >> $BASH_ENV
-            echo 'export IMAGE_NAME=vue-docker-cicd' >> $BASH_ENV
-            echo 'export LOG_SERVER_HOST=yamenai.com' >> $BASH_ENV
-            echo 'export LOG_SERVER_USER=root' >> $BASH_ENV
-            echo 'export PROD_SERVER_HOST=142.93.156.40' >> $BASH_ENV
-            echo 'export PROD_SERVER_USER=root' >> $BASH_ENV
+            echo 'export $(grep -v '^#' .env | xargs)' >> $BASH_ENV
+            # echo 'export IMAGE_NAME=vue-docker-cicd' >> $BASH_ENV
+            # echo 'export LOG_SERVER_HOST=yamenai.com' >> $BASH_ENV
+            # echo 'export LOG_SERVER_USER=root' >> $BASH_ENV
+            # echo 'export PROD_SERVER_HOST=142.93.156.40' >> $BASH_ENV
+            # echo 'export PROD_SERVER_USER=root' >> $BASH_ENV
             echo 'export SUBDOMAIN=${CIRCLE_BRANCH//[\/.]/_}' >> $BASH_ENV 
             printf 'TAG=${TAG}; SUBDOMAIN=${SUBDOMAIN}; PACKAGE_VERSION=${PACKAGE_VERSION}'
 # Use cache for Docker Image (https://circleci.com/docs/2.0/configuration-reference/#save_cache)
